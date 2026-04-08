@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Solve Quadratic Equation</title>
+</head>
+<body>
+    <script>
+        function getCoefficient(promptText) {
+            while (true) {
+                let input = prompt(promptText);
+                if (input === null) {
+                    alert("Type  cancelled.");
+                    return null;
+                }
+                let num = parseFloat(input);
+                if (!isNaN(num)) {
+                    return num;
+                }
+                alert("Invalid string, please enter a number");
+            }
+        }
+
+        let a = getCoefficient("Please type number a：");
+        let b = getCoefficient("Please type number b：");
+        let c = getCoefficient("Please type number c：");
+
+        if (a === null || b === null || c === null) return;
+
+        let delta = b * b - 4 * a * c;
+
+        let x1 = (-b + Math.sqrt(delta)) / (2 * a);
+        let x2 = (-b - Math.sqrt(delta)) / (2 * a);
+
+        alert(`The two results for the formula：\nx1 = ${x1}\nx2 = ${x2}`);
+
+        console.log("Results：");
+        console.log("a =", a, ", b =", b, ", c =", c);
+        console.log("delta =", delta);
+        console.log("x1 =", x1);
+        console.log("x2 =", x2);
+    </script>
+</body>
+</html>
