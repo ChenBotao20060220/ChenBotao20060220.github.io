@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadratic equation Formula Solver</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            padding: 30px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 25px;
+        }
+
+        .form-item {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #409eff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #338ecc;
+        }
+
+        .result {
+            margin-top: 25px;
+            padding: 18px;
+            border-radius: 8px;
+            font-size: 16px;
+            line-height: 1.6;
+            white-space: pre-line;
+        }
+
+        .success {
+            background-color: #e6f7ff;
+            border: 1px solid #91d5ff;
+            color: #005cb9;
+        }
+
+        .error {
+            background-color: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #c53030;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Formula ax² + bx + c = 0 Slover</h2>
+
+        <div class="form-item">
+            <label>a</label>
+            <input type="text" id="a" placeholder="Type a number, don't type 0">
+        </div>
+        <div class="form-item">
+            <label>b</label>
+            <input type="text" id="b" placeholder="Type a number">
+        </div>
+        <div class="form-item">
+            <label>c</label>
+            <input type="text" id="c" placeholder="Type a number">
+        </div>
+
+        <button onclick="calculate()">Start calculating</button>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        function calculate() {
+            let resultBox = document.getElementById('result');
+            resultBox.innerHTML = '';
+            resultBox.className = 'result';
+
+            let a = parseFloat(document.getElementById('a').value.trim());
+            let b = parseFloat(document.getElementById('b').value.trim());
+            let c = parseFloat(document.getElementById('c').value.trim());
+
+            if (isNaN(a) || isNaN(b) || isNaN(c)) {
+                resultBox.innerText = "❌ Error: Please enter a valid number";
+                resultBox.classList.add('error');
+                return;
+            }
+
+            if (a === 0) {
+                resultBox.innerText = "❌ Error: number 'a' cannot be 0";
+                resultBox.classList.add('error');
+                return;
+            }
+
+            let delta = b * b - 4 * a * c;
+            let res = "";
+
+            if (delta > 0) {
+                let x1 = (-b + Math.sqrt(delta)) / (2 * a);
+                let x2 = (-b - Math.sqrt(delta)) / (2 * a);
+                res = `✅ The formula has 2 results that are not equal：
+x1 = ${x1.toFixed(4)}
+x2 = ${x2.toFixed(4)}`;
+            } else if (delta === 0) {
+                let x = -b / (2 * a);
+                res = `✅ The formula has 2 results that are equal：
+x1 = x2 = ${x.toFixed(4)}`;
+            } else {
+                let real = (-b / (2 * a)).toFixed(4);
+                let imag = (Math.sqrt(-delta) / (2 * a)).toFixed(4);
+                res = `⚠️ The formula has no real number results but 2 plural results：
+x1 = ${real} + ${imag}i
+x2 = ${real} - ${imag}i`;
+            }
+
+            resultBox.innerText = res;
+            resultBox.classList.add('success');
+        }
+    </script>
+</body>
+</html>
