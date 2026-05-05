@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hanoi Tower 3D Learning Game</title>
+    <style>
+        * {
+            margin:  0;
+            padding:  0;
+            box-sizing:  border-box;
+            font-family:  'Segoe UI', sans-serif;
+        }
+
+        body {
+            background:  linear-gradient(135deg, #87CEEB 0%, #E6E6FA 100%);
+            min-height:  100vh;
+            display:  flex;
+            flex-direction:  column;
+            align-items:  center;
+            padding:  20px;
+            perspective:  1000px;
+        }
+
+        h1 {
+            color:  #2c3e50;
+            margin-bottom:  20px;
+            text-shadow:  0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .controls {
+            display:  flex;
+            gap:  15px;
+            align-items:  center;
+            margin-bottom:  30px;
+            flex-wrap:  wrap;
+            justify-content:  center;
+        }
+
+        .control-group {
+            display:  flex;
+            align-items:  center;
+            gap:  8px;
+            background:  rgba(255,255,255,0.9);
+            padding:  10px 15px;
+            border-radius:  10px;
+            box-shadow:  0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        input[type="number"], input[type="range"] {
+            padding:  6px;
+            border:  1px solid #ddd;
+            border-radius:  6px;
+        }
+
+        button {
+            padding:  8px 16px;
+            border:  none;
+            border-radius:  8px;
+            background:  #3498db;
+            color:  white;
+            font-weight:  600;
+            cursor:  pointer;
+            transition:  all 0.3s ease;
+            box-shadow:  0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        button: hover: not(: disabled) {
+            background:  #2980b9;
+            transform:  translateY(-2px);
+        }
+
+        button: disabled {
+            background:  #bdc3c7;
+            cursor:  not-allowed;
+        }
+
+        .game-board {
+            display:  flex;
+            gap:  80px;
+            position:  relative;
+            transform-style:  preserve-3d;
+        }
+
+        .peg {
+            display:  flex;
+            flex-direction:  column-reverse;
+            align-items:  center;
+            width:  120px;
+            height:  300px;
+            position:  relative;
+            cursor:  pointer;
+        }
+
+        .peg: : before {
+            content:  '';
+            position:  absolute;
+            bottom:  0;
+            width:  20px;
+            height:  250px;
+            background:  linear-gradient(to right, #8B4513 0%, #D2B48C 50%, #8B4513 100%);
+            border-radius:  4px 4px 0 0;
+            box-shadow:  inset 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        .peg: : after {
+            content:  '';
+            position:  absolute;
+            bottom:  -10px;
+            width:  140px;
+            height:  20px;
+            background:  linear-gradient(to bottom, #8B4513, #5D3A1A);
+            border-radius:  4px;
+            box-shadow:  0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .disk {
+            height:  25px;
+            border-radius:  12px;
+            margin:  2px 0;
+            cursor:  grab;
+            transition:  transform 0.2s ease, box-shadow 0.2s ease;
+            position:  relative;
+            box-shadow:  0 4px 8px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.3);
+        }
+
+        .disk: : before {
+            content:  '';
+            position:  absolute;
+            top:  3px;
+            left:  10%;
+            width:  80%;
+            height:  6px;
+            background:  rgba(255,255,255,0.4);
+            border-radius:  10px;
+        }
+
+        .disk.selected {
+            transform:  translateY(-30px);
+            box-shadow:  0 8px 16px rgba(0,0,0,0.4), 0 0 15px rgba(255,215,0,0.7);
+        }
+
+        .disk-1 { width:  40px; background:  linear-gradient(135deg, #ff6b6b, #ee5a5a); }
+        .disk-2 { width:  60px; background:  linear-gradient(135deg, #ffd93d, #f9c846); }
+        .disk-3 { width:  80px; background:  linear-gradient(135deg, #6bcb77, #4dbb66); }
+        .disk-4 { width:  100px; background:  linear-gradient(135deg, #4d96ff, #3b82f6); }
+        .disk-5 { width:  110px; background:  linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .disk-6 { width:  115px; background:  linear-gradient(135deg, #e67e22, #d35400); }
+        .disk-7 { width:  118px; background:  linear-gradient(135deg, #1abc9c, #16a085); }
+        .disk-8 { width:  120px; background:  linear-gradient(135deg, #34495e, #2c3e50); }
+
+        .status {
+            margin-top:  20px;
+            font-size:  18px;
+            font-weight:  600;
+            padding:  10px 20px;
+            border-radius:  8px;
+            background:  rgba(255,255,255,0.9);
+            box-shadow:  0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .status.warning {
+            color:  #e74c3c;
+            animation:  shake 0.5s ease;
+        }
+
+        .status.success {
+            color:  #27ae60;
+            animation:  celebrate 0.5s ease infinite alternate;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform:  translateX(0); }
+            25% { transform:  translateX(-5px); }
+            75% { transform:  translateX(5px); }
+        }
+
+        @keyframes celebrate {
+            from { transform:  scale(1); }
+            to { transform:  scale(1.05); }
+        }
+    </style>
+</head>
+<body>
+    <h1>🏰 Hanoi Tower 3D Learning Game</h1>
+
+    <div class="controls">
+        <div class="control-group">
+            <label for="diskCount">Ring amount: </label>
+            <input type="number" id="diskCount" min="3" max="8" value="5">
+            <input type="range" id="diskSlider" min="3" max="8" value="5">
+        </div>
+        <button id="autoSolveBtn">Automatic Solve</button>
+        <button id="resetBtn">Reset Game</button>
+        <div class="control-group">
+            <span>Steps:  <span id="moveCount">0</span></span>
+        </div>
+    </div>
+
+    <div class="game-board" id="gameBoard">
+        <div class="peg" data-index="0"></div>
+        <div class="peg" data-index="1"></div>
+        <div class="peg" data-index="2"></div>
+    </div>
+
+    <div class="status" id="status">Choose a ring to start!</div>
+
+    <script>
+        class HanoiGame {
+            constructor() {
+                this.gameState = {
+                    disksCount:  5,
+                    pegs:  [[], [], []],
+                    moves:  0,
+                    isAutoSolving:  false,
+                    selectedPegIndex:  null,
+                    selectedDiskSize:  null
+                };
+
+                this.board = document.getElementById('gameBoard');
+                this.pegs = document.querySelectorAll('.peg');
+                this.diskCountInput = document.getElementById('diskCount');
+                this.diskSlider = document.getElementById('diskSlider');
+                this.autoSolveBtn = document.getElementById('autoSolveBtn');
+                this.resetBtn = document.getElementById('resetBtn');
+                this.moveCountEl = document.getElementById('moveCount');
+                this.statusEl = document.getElementById('status');
+
+                this.initEventListeners();
+                this.init(this.gameState.disksCount);
+            }
+
+            initEventListeners() {
+                this.diskCountInput.addEventListener('change', (e) => {
+                    let val = parseInt(e.target.value);
+                    val = Math.max(3, Math.min(8, val));
+                    this.diskCountInput.value = val;
+                    this.diskSlider.value = val;
+                    this.init(val);
+                });
+
+                this.diskSlider.addEventListener('input', (e) => {
+                    const val = parseInt(e.target.value);
+                    this.diskCountInput.value = val;
+                    this.init(val);
+                });
+
+                this.resetBtn.addEventListener('click', () => this.init(this.gameState.disksCount));
+
+                this.autoSolveBtn.addEventListener('click', () => this.autoSolve());
+
+                this.pegs.forEach(peg => {
+                    peg.addEventListener('click', (e) => {
+                        if (this.gameState.isAutoSolving) return;
+                        const index = parseInt(peg.dataset.index);
+                        this.handlePegClick(index);
+                    });
+                });
+            }
+
+            init(disksCount) {
+                this.gameState.disksCount = disksCount;
+                this.gameState.pegs = [[], [], []];
+                this.gameState.moves = 0;
+                this.gameState.isAutoSolving = false;
+                this.gameState.selectedPegIndex = null;
+                this.gameState.selectedDiskSize = null;
+
+                for (let i = disksCount; i >= 1; i--) {
+                    this.gameState.pegs[0].push(i);
+                }
+
+                this.updateUI();
+                this.updateMoveCount();
+                this.updateStatus('Choose a ring to start!');
+                this.setButtonsEnabled(true);
+            }
+
+            updateUI() {
+                this.pegs.forEach((peg, pegIndex) => {
+                    peg.innerHTML = '';
+                    this.gameState.pegs[pegIndex].forEach(diskSize => {
+                        const disk = document.createElement('div');
+                        disk.className = `disk disk-${diskSize}`;
+                        disk.dataset.size = diskSize;
+                        peg.appendChild(disk);
+                    });
+                });
+            }
+
+            updateMoveCount() {
+                this.moveCountEl.textContent = this.gameState.moves;
+            }
+
+            updateStatus(text, type = 'normal') {
+                this.statusEl.textContent = text;
+                this.statusEl.className = 'status';
+                if (type === 'warning') {
+                    this.statusEl.classList.add('warning');
+                } else if (type === 'success') {
+                    this.statusEl.classList.add('success');
+                }
+            }
+
+            setButtonsEnabled(enabled) {
+                this.autoSolveBtn.disabled = !enabled;
+                this.resetBtn.disabled = !enabled;
+                this.diskCountInput.disabled = !enabled;
+                this.diskSlider.disabled = !enabled;
+            }
+
+            handlePegClick(pegIndex) {
+                const pegDisks = this.gameState.pegs[pegIndex];
+                const topDiskSize = pegDisks.length > 0 ? pegDisks[pegDisks.length - 1] :  null;
+
+                if (this.gameState.selectedPegIndex === null) {
+                    if (topDiskSize === null) {
+                        this.updateStatus('This pillar has no rings!', 'warning');
+                        return;
+                    }
+                    this.gameState.selectedPegIndex = pegIndex;
+                    this.gameState.selectedDiskSize = topDiskSize;
+                    this.highlightDisk(pegIndex, true);
+                    this.updateStatus(`Chosen ring ${topDiskSize}，click a pillar to place`);
+                }
+                else {
+                    const fromIndex = this.gameState.selectedPegIndex;
+                    const diskSize = this.gameState.selectedDiskSize;
+
+                    if (pegIndex === fromIndex) {
+                        this.highlightDisk(fromIndex, false);
+                        this.gameState.selectedPegIndex = null;
+                        this.gameState.selectedDiskSize = null;
+                        this.updateStatus('Cancelled choosing');
+                        return;
+                    }
+
+
+                    if (!this.isValidMove(fromIndex, pegIndex)) {
+                        this.updateStatus('❌Illegal move: You cannot put a bigger ring on a small one!', 'warning');
+                        this.highlightDisk(fromIndex, false);
+                        this.gameState.selectedPegIndex = null;
+                        this.gameState.selectedDiskSize = null;
+                        return;
+                    }
+
+                    this.executeMove(fromIndex, pegIndex);
+                    this.highlightDisk(fromIndex, false);
+                    this.gameState.selectedPegIndex = null;
+                    this.gameState.selectedDiskSize = null;
+                    this.gameState.moves++;
+                    this.updateMoveCount();
+                    this.updateStatus('Move successfully!');
+
+                    if (this.checkWin()) {
+                        this.updateStatus('🎉 Congratulations! You finished Hanoi Tower!', 'success');
+                    }
+                }
+            }
+
+            highlightDisk(pegIndex, highlight) {
+                const disks = this.pegs[pegIndex].querySelectorAll('.disk');
+                if (disks.length > 0) {
+                    const topDisk = disks[disks.length - 1];
+                    if (highlight) {
+                        topDisk.classList.add('selected');
+                    } else {
+                        topDisk.classList.remove('selected');
+                    }
+                }
+            }
+
+            isValidMove(fromIndex, toIndex) {
+                const fromDisks = this.gameState.pegs[fromIndex];
+                const toDisks = this.gameState.pegs[toIndex];
+
+                if (fromDisks.length === 0) return false;
+
+                const movingDisk = fromDisks[fromDisks.length - 1];
+                const topDiskAtTarget = toDisks.length > 0 ? toDisks[toDisks.length - 1] :  null;
+
+                return topDiskAtTarget === null || movingDisk < topDiskAtTarget;
+            }
+
+            executeMove(fromIndex, toIndex) {
+                const disk = this.gameState.pegs[fromIndex].pop();
+                this.gameState.pegs[toIndex].push(disk);
+                this.updateUI();
+            }
+
+            checkWin() {
+                return this.gameState.pegs[2].length === this.gameState.disksCount;
+            }
+
+            async autoSolve() {
+                if (this.gameState.isAutoSolving) return;
+                this.gameState.isAutoSolving = true;
+                this.setButtonsEnabled(false);
+                this.updateStatus('🤖 Automatically Solving...');
+
+                this.init(this.gameState.disksCount);
+                this.gameState.isAutoSolving = true;
+                this.setButtonsEnabled(false);
+
+                await this.solveRecursive(this.gameState.disksCount, 0, 2, 1);
+
+                this.gameState.isAutoSolving = false;
+                this.setButtonsEnabled(true);
+                this.updateStatus('🎉 Automatically Solve finished!', 'success');
+            }
+
+            async solveRecursive(n, from, to, aux) {
+                if (n === 0) return;
+
+                await this.solveRecursive(n - 1, from, aux, to);
+                await this.moveDisk(from, to);
+                await this.solveRecursive(n - 1, aux, to, from);
+            }
+
+            async moveDisk(from, to) {
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        if (this.isValidMove(from, to)) {
+                            this.executeMove(from, to);
+                            this.gameState.moves++;
+                            this.updateMoveCount();
+                        }
+                        resolve();
+                    }, 500); 
+                });
+            }
+        }
+
+        new HanoiGame();
+    </script>
+</body>
+</html>
